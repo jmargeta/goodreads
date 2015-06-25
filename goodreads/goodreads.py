@@ -42,7 +42,7 @@ class GoodreadsClient(object):
         if RESOURCE_OWNER_KEY and RESOURCE_OWNER_SECRET:
             access_token = {
                 'oauth_token': os.getenv('GOODREAD_RESOURCE_OWNER_KEY'),
-                'oauth_secret': os.getenv('GOODREAD_RESOURCE_OWNER_SECRET')
+                'oauth_token_secret': os.getenv('GOODREAD_RESOURCE_OWNER_SECRET')
             }
         else:
             with open(OAUTH_TOKEN_JSON, 'r') as fp:
