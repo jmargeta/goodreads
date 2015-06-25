@@ -15,8 +15,15 @@ import xmltodict
 
 CLIENT_ID = os.getenv('GOODREADS_CLIENT_ID')
 CLIENT_SECRET = os.getenv('GOODREADS_CLIENT_SECRET')
-OAUTH_TOKEN_JSON = os.getenv(
-    'GOODREADS_OAUTH_TOKEN_JSON', './goodreads_oauth.json')
+
+# credentials stored to home folder
+OAUTH_TOKEN_JSON = os.getenv('GOODREADS_OAUTH_TOKEN_JSON',
+                             os.path.expanduser('~/.goodreads.json'))
+
+# these variables take precedence over the .goodreads.json
+# this is to simplify travis-ci testing
+RESOURCE_OWNER_KEY = os.getenv('GOODREADS_RESOURCE_OWNER_KEY')
+RESOURCE_OWNER_SECRET = os.getenv('GOODREADS_RESOURCE_OWNER_SECRET')
 
 req_token_url = 'https://www.goodreads.com/oauth/request_token'
 authorize_url = 'https://www.goodreads.com/oauth/authorize'
@@ -30,9 +37,16 @@ class GoodreadsClient(object):
         GoodreadsClient.authorize_access()
         must be called the very first time
         """
-        # relogin with the saved credentials
-        with open(OAUTH_TOKEN_JSON, 'r') as fp:
-            access_token = json.load(fp)
+
+        # load credentials
+        if RESOURCE_OWNER_KEY and RESOURCE_OWNER_SECRET:
+            access_token = {
+                'oauth_token': os.getenv('GOODREAD_RESOURCE_OWNER_KEY'),
+                'oauth_secret': os.getenv('GOODREAD_RESOURCE_OWNER_SECRET')
+            }
+        else:
+            with open(OAUTH_TOKEN_JSON, 'r') as fp:
+                access_token = json.load(fp)
 
         self.session = OAuth1Session(
             CLIENT_ID,
@@ -51,14 +65,14 @@ class GoodreadsClient(object):
 
         goodreads = OAuth1Session(CLIENT_ID, client_secret=CLIENT_SECRET)
         oauth_token = goodreads.fetch_request_token(req_token_url)
-        authorize_url = goodreads.authorization_url(authorize_url)
+        authorization_url = goodreads.authorization_url(authorize_url)
 
         raw_input("""Visit the following link to approve the app:
         -----------------------------------------------------
         {}
         -----------------------------------------------------
         Press Return when done
-        """.format(authorize_url))
+        """.format(authorization_url))
 
         # fetch oauth access token
         # the verifier needs somevalue, probably any will do
