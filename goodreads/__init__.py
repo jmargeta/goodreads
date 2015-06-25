@@ -1,4 +1,4 @@
-from goodreads import GoodreadsClient
+from .goodreads import GoodreadsClient
 
 __version__ = '0.1.0'
 
